@@ -34,9 +34,6 @@ division_euclidienne(-100,23)
 # Reste : 15
 
 
-
-
-
 # Question2
 def formater_duree(secondes):
     annees = divmod(secondes,60 * 60 * 24 * 365) 
@@ -55,6 +52,16 @@ def formater_duree(secondes):
 
 formater_duree(123381181)
 # 3 années 333 jours 0 heure 33 minutes 1 seconde
+
+
+def tronquer_8_decimales_sans_arrondir(x: float) -> str:
+    s = f"{x:.20f}"            # conversion en chaîne avec beaucoup de décimales
+    if "." not in s:
+        return s
+    avant, apres = s.split(".", 1)
+    apres = apres[:8]          # garder max 8
+    apres = apres.rstrip("0")  # enlever les zéros de fin inutiles
+    return avant if apres == "" else avant + "." + apres
 
 
 
@@ -78,16 +85,8 @@ def nb_chiffre_apres_virgule(nb):
     return nb_apres_virgule
 
 def nb_chiffre_avant_virgule(nb):
-    nb = str(nb)  
-
-    # Si le nombre est négatif, on enlève le "-"
-    if nb.startswith("-"):
-        nb = nb[1:]
-
-    if "." in nb:
-        return len(nb.split(".")[0])  # partie avant la virgule
-    else:
-        return len(nb)  # tout le nombre (pas de virgule)
+    s = str(nb)
+    return len(s.split(".", 1)[1]) if "." in s else 0
     
 def est_negatif(nb) :
     nb = str(nb)  
@@ -99,55 +98,92 @@ def est_negatif(nb) :
 
 # Question 3
 def conv_nombre_base_vers_decimal(nombre_en_base, base):
- 
- nbChiffreApresVirgule = nb_chiffre_apres_virgule(nombre_en_base)
- nbChiffreAvantVirgule = nbChiffreAvantVirgule(nombre_en_base)
- est_negatif = est_negatif(nombre_en_base)
- result = str("")
+    if not (2 <= base <= 36):
+        raise ValueError("La base doit être entre 2 et 36.")
 
- if(base >= 2): #Base 2 au plus et au plus 8 chiffres après la virgule
+    # Vérifier le signe
+    negatif = nombre_en_base.startswith("-")
+    if negatif:
+        nombre_en_base = nombre_en_base[1:]
 
-    if(est_negatif):  # Rendre le chiffre positif pour simplifier les calculs
-     nombre_en_base *= -1
+    # Séparer partie entière et fractionnaire
+    if "." in nombre_en_base:
+        partie_entiere, partie_frac = nombre_en_base.split(".")
+    else:
+        partie_entiere, partie_frac = nombre_en_base, ""
 
-    
-     while(quotienEtReste[0] != 0): #Convertir la partie avant la virgule #Ajustement a faire. Pour hexaDecimal prendre ne compte les lettres
-        quotienEtReste = (nbChiffreAvantVirgule,0)
-        quotienEtReste = divmod(quotienEtReste[0],base)
-        result += str(entier_vers_caractere(quotienEtReste[1])) #reste a faire un inversement
-    i = 0
-    quotien = 0
+    # Conversion partie entière
+    valeur = 0
+    for c in partie_entiere:
+        valeur = valeur * base + caractere_vers_entier(c)
 
-    result += '.'
+    # Conversion partie fractionnaire
+    puissance = base
+    for c in partie_frac:
+        valeur += caractere_vers_entier(c) / puissance
+        puissance *= base
 
-    while(True): #Partie après la virgule
-
-        if(quotien != 0 or i < 7):
-            break
-        temp = nbChiffreApresVirgule * base
-        quotien = nbChiffreAvantVirgule(temp)
-        reste = nb_chiffre_apres_virgule(temp)
-
-        result += reversed(str(entier_vers_caractere(nbChiffreApresVirgule(reste))))
-    
-    #rendre négatif si nécéssaire
-    #Faire le calcule apres la virgule
-
+    return "-" + tronquer_8_decimales_sans_arrondir(valeur) if negatif else tronquer_8_decimales_sans_arrondir(valeur)
 
 
 def conv_decimal_vers_base(n, base):
-    pass
+
+    # vérifier que la base est valide
+    if not (2 <= base <= 36):
+        raise ValueError("La base doit être entre 2 et 36.")
+    
+    # vérifier le signe
+    negatif = n < 0
+    x = abs(float(n)) 
+
+    # séparer partie entière et fractionnaire
+    entier = int(x)           # partie entière
+    frac = x - entier         # partie après la virgule
 
 
+    # conversion de la partie entière
+    tmp = int(x)
+    if tmp == 0:
+        partie_entiere_convertie = "0"
+    else:
+        acc = []
+        while tmp > 0:
+            tmp, reste = divmod(tmp, base)
+            acc.append(entier_vers_caractere(reste))
+        partie_entiere_convertie = "".join(reversed(acc))
 
-# conv_nombre_base_vers_decimal("-1231.1201", 4)
+
+    # conversion de la partie fractionnaire
+
+    chiffres_frac = []
+    for _ in range(8):          # max 8 chiffres
+        if frac == 0:
+            break
+        frac *= base
+        d = int(frac)           # partie entière
+        chiffres_frac.append(entier_vers_caractere(d))
+        frac -= d               # garder seulement la partie après la virgule
+
+    # assembler le résultat
+    if chiffres_frac:
+        resultat = partie_entiere_convertie + "." + "".join(chiffres_frac)
+    else:
+        resultat = partie_entiere_convertie
+
+    if negatif and resultat != "0":
+        resultat = "-" + resultat
+
+    return resultat
+    
+
+print(conv_nombre_base_vers_decimal("-1231.1201", 4))
 # -109.390625
 
-# conv_nombre_base_vers_decimal("A00.B", 12)
+print(conv_nombre_base_vers_decimal("A00.B", 12))
 # 1440.91666666
 
-# conv_decimal_vers_base(171.32, 8)
+print(conv_decimal_vers_base(171.32, 8))
 # "253.24365605"
 
-# conv_decimal_vers_base(203.75, 20)
+print(conv_decimal_vers_base(203.75, 20))
 # "A3.F"
