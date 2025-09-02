@@ -115,12 +115,8 @@ def conv_nombre_base_vers_decimal(nombre_en_base, base):
         quotienEtReste = (nbChiffreAvantVirgule,0)
         quotienEtReste = divmod(quotienEtReste[0],base)
         result += str(entier_vers_caractere(quotienEtReste[1])) #reste a faire un inversement
-
-
     i = 0
     quotien = 0
-    
-    
 
     result += '.'
 
@@ -132,13 +128,7 @@ def conv_nombre_base_vers_decimal(nombre_en_base, base):
         quotien = nbChiffreAvantVirgule(temp)
         reste = nb_chiffre_apres_virgule(temp)
 
-        result += str(entier_vers_caractere(nbChiffreApresVirgule(reste)))
-
-
-
-
-
-    
+        result += reversed(str(entier_vers_caractere(nbChiffreApresVirgule(reste))))
     
     #rendre négatif si nécéssaire
     #Faire le calcule apres la virgule
