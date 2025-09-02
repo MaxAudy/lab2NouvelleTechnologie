@@ -111,13 +111,28 @@ def conv_nombre_base_vers_decimal(nombre_en_base, base):
      nombre_en_base *= -1
 
     
-    while(quotienEtReste[0] != 0): #Convertir la partie avant la virgule
+     while(quotienEtReste[0] != 0): #Convertir la partie avant la virgule #Ajustement a faire. Pour hexaDecimal prendre ne compte les lettres
         quotienEtReste = (nbChiffreAvantVirgule,0)
         quotienEtReste = divmod(quotienEtReste[0],base)
-        result += quotienEtReste[1]
+        result += str(entier_vers_caractere(quotienEtReste[1])) #reste a faire un inversement
 
-    while(quotienEtReste[0] != 0 or i < 7):
-        i = 0
+
+    i = 0
+    quotien = 0
+    
+    
+
+    result += '.'
+
+    while(True): #Partie après la virgule
+
+        if(quotien != 0 or i < 7):
+            break
+        temp = nbChiffreApresVirgule * base
+        quotien = nbChiffreAvantVirgule(temp)
+        reste = nb_chiffre_apres_virgule(temp)
+
+        result += str(entier_vers_caractere(nbChiffreApresVirgule(reste)))
 
 
 
